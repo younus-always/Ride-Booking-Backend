@@ -5,7 +5,7 @@ export const createUserZodSchema = z.object({
       name: z.string({ error: "Name is required" })
             .min(3, { error: "Name must be 3 characters" })
             .max(50, { error: "Name must shorter than 50 characters" }),
-      email: z.string({ error: "Email is required" }).email({ error: "Invalid email format" }),
+      email: z.string({ error: "Email is required" }),
       password: z.string({ error: "Password is required" })
             .min(8, { error: "Password must be at least 8 characters long." })
             .regex(/^(?=.*[A-Z])/, {
@@ -38,6 +38,6 @@ export const updateUserZodSchema = z.object({
             .optional(),
       role: z.enum(Object.values(Role)).optional(),
       isActive: z.enum(Object.values(IsActive)).optional(),
-      isVerified: z.boolean({ error: "isVerified must be true of false" }),
-      isDeleted: z.boolean({ error: "isDeleted must be true of false" }),
+      isVerified: z.boolean({ error: "isVerified must be true of false" }).optional(),
+      isDeleted: z.boolean({ error: "isDeleted must be true of false" }).optional(),
 });

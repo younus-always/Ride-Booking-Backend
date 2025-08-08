@@ -1,8 +1,11 @@
-import { NextFunction, Request, Response } from "express";
+import { JwtPayload } from './../../../../node_modules/@types/jsonwebtoken/index.d';
+import {  Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { UserService } from "./user.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes";
+import jwt from "jsonwebtoken";
+import { envVars } from "../../config/env";
 
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
@@ -31,7 +34,9 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 const updateUser = catchAsync(async (req: Request, res: Response) => {
       const { id } = req.params
       const body = req.body
-      const user = await UserService.updateUser(id, body)
+      const token = req.headers.authorization
+      const verifiedToken = jwt.verify(token as string, envVars.JWT_SECRET_TOKEN) as JwtPayload
+      const user = await UserService.updateUser(id, body, verifiedToken)
       sendResponse(res, {
             success: true,
             statusCode: httpStatus.OK,

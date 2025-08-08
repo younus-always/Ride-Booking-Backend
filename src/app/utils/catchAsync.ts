@@ -5,9 +5,9 @@ type AsyncHandler = (req: Request, res: Response, next: NextFunction) => Promise
 
 export const catchAsync = (fn: AsyncHandler) => {
       return (req: Request, res: Response, next: NextFunction) => {
-            Promise.resolve(fn(req, res, next)).catch((err: any) => {
+            Promise.resolve(fn(req, res, next)).catch((err) => {
                   if (envVars.NODE_ENV === "development") {
-                        console.log(err)
+                        console.log("Try-Catch Error handler:", err)
                   }
                   next(err)
             })

@@ -1,6 +1,7 @@
+import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 import AppError from "../../errorHelper/AppError";
-import { IAuthProvider, IUser } from "./user.interface";
+import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
 import bcryptjs from "bcryptjs";
 import httpStatus from 'http-status-codes';
@@ -40,7 +41,26 @@ const getAllUsers = async () => {
       }
 };
 
-const updateUser = async (id: string, payload: Partial<IUser>) => {
+const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
+      const isUserExist = await User.findById(userId)
+      if (!isUserExist) {
+            throw new AppError(httpStatus.NOT_FOUND, "User Not Found")
+      }
+
+      if (payload.role) {
+            if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER || decodedToken.role === Role.DRIVER) {
+                  throw new AppError(httpStatus.UNAUTHORIZED, "Your are not authorized 1")
+            }
+            if (decodedToken.role === Role.ADMIN && payload.role === Role.SUPER_ADMIN) {
+                  throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized 2")
+            }
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(userId, payload, {
+            new: true,
+            runValidators: true
+      });
+      return updatedUser
 
 };
 
