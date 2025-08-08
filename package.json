@@ -1,0 +1,16 @@
+{
+  "name": "ride-booking-backend",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only ./src/server",
+    "build": "tsc",
+    "lint": "npx eslint ./src",
+    "lint:fix": "npx eslint ./src --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
