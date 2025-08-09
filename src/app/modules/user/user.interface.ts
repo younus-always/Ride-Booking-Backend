@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import  { Types } from "mongoose";
 
 export enum Role {
       SUPER_ADMIN = "SUPER_ADMIN",
@@ -30,4 +30,4 @@ export interface IUser {
       isVerified?: boolean;
       isDeleted?: boolean;
       isActive?: IsActive
-};
+}

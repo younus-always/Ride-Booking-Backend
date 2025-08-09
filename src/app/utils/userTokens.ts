@@ -1,19 +1,47 @@
+import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../config/env";
-import { IUser } from "../modules/user/user.interface";
-import { generateToken } from "./jwt";
+import { IsActive, IUser } from "../modules/user/user.interface";
+import { generateToken, verifyToken } from "./jwt";
+import { User } from "../modules/user/user.model";
+import AppError from "../errorHelper/AppError";
+import httpStatus from "http-status-codes";
 
 export const createUserTokens = (payload: Partial<IUser>) => {
-      const jwtPayload = {
-            userId: payload._id,
-            email: payload.email,
-            role: payload.role
-      };
+  const jwtPayload = {
+    userId: payload._id,
+    email: payload.email,
+    role: payload.role
+  };
 
-      const accessToken = generateToken(jwtPayload, envVars.JWT_SECRET_TOKEN, envVars.JWT_SECRET_EXPIRES);
-      const refreshToken = generateToken(jwtPayload, envVars.JWT_REFRESH_TOKEN, envVars.JWT_REFRESH_EXPIRES);
+  const accessToken = generateToken(jwtPayload, envVars.JWT_SECRET_TOKEN, envVars.JWT_SECRET_EXPIRES);
+  const refreshToken = generateToken(jwtPayload, envVars.JWT_REFRESH_TOKEN, envVars.JWT_REFRESH_EXPIRES);
 
-      return {
-            accessToken,
-            refreshToken
-      }
+  return {
+    accessToken,
+    refreshToken
+  };
+};
+
+
+export const createNewAccessTokenWithRefreshToken = async (refreshToken: string) => {
+  const verifiedRefreshToken = verifyToken(refreshToken, envVars.JWT_REFRESH_TOKEN) as JwtPayload;
+  const isUserExist = await User.findOne({ email: verifiedRefreshToken.email });
+
+  if (!isUserExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist");
+  } else if (isUserExist.isActive === IsActive.INACTIVE || isUserExist.isActive === IsActive.BLOCKED) {
+    throw new AppError(httpStatus.FORBIDDEN, `User is ${isUserExist.isActive}`);
+  } else if (isUserExist.isDeleted) {
+    throw new AppError(httpStatus.FORBIDDEN, "User is Deleted");
+  };
+
+  const jwtPayload = {
+    userId: isUserExist._id,
+    email: isUserExist.email,
+    role: isUserExist.role
+  };
+
+  const newToken = generateToken(jwtPayload, envVars.JWT_SECRET_TOKEN, envVars.JWT_SECRET_EXPIRES);
+
+  return newToken;
 };
