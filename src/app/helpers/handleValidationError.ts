@@ -15,7 +15,7 @@ export const handleValidationError = (err: mongoose.Error.ValidationError): TErr
 
       return {
             statusCode: httpStatus.BAD_REQUEST,
-            message: "Validation Error",
+            message: "Request validation failded. Please check the submitted data.",
             errorSources
       };
 };

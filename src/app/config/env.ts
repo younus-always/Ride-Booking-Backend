@@ -2,20 +2,21 @@ import dotenv from "dotenv";
 dotenv.config();
 
 interface IEnvConfig {
-      PORT: string;
-      DB_URL: string;
-      NODE_ENV: "development" | "production";
-      BCRYPT_SALT_ROUND: string;
-      JWT_SECRET_TOKEN: string;
-      JWT_SECRET_EXPIRES: string;
-      JWT_REFRESH_TOKEN: string;
-      JWT_REFRESH_EXPIRES: string;
-      SUPER_ADMIN_EMAIL: string;
-      SUPER_ADMIN_PASSWORD: string
+  PORT: string;
+  DB_URL: string;
+  NODE_ENV: "development" | "production";
+  BCRYPT_SALT_ROUND: string;
+  JWT_SECRET_TOKEN: string;
+  JWT_SECRET_EXPIRES: string;
+  JWT_REFRESH_TOKEN: string;
+  JWT_REFRESH_EXPIRES: string;
+  SUPER_ADMIN_EMAIL: string;
+  SUPER_ADMIN_PASSWORD: string;
+  EXPRESS_SESSION_SECRET: string
 };
 
 const loadEnvVars = (): IEnvConfig => {
-  const requireEnvVars: string[] = ["PORT", "DB_URL", "NODE_ENV", "BCRYPT_SALT_ROUND", "JWT_SECRET_TOKEN", "JWT_SECRET_EXPIRES", "JWT_REFRESH_TOKEN", "JWT_REFRESH_EXPIRES", "SUPER_ADMIN_EMAIL", "SUPER_ADMIN_PASSWORD"];
+  const requireEnvVars: string[] = ["PORT", "DB_URL", "NODE_ENV", "BCRYPT_SALT_ROUND", "JWT_SECRET_TOKEN", "JWT_SECRET_EXPIRES", "JWT_REFRESH_TOKEN", "JWT_REFRESH_EXPIRES", "SUPER_ADMIN_EMAIL", "SUPER_ADMIN_PASSWORD", "EXPRESS_SESSION_SECRET"];
 
   requireEnvVars.forEach(key => {
     if (!process.env[key]) {
@@ -32,6 +33,7 @@ const loadEnvVars = (): IEnvConfig => {
     JWT_SECRET_EXPIRES: process.env.JWT_SECRET_EXPIRES as string,
     JWT_REFRESH_TOKEN: process.env.JWT_REFRESH_TOKEN as string,
     JWT_REFRESH_EXPIRES: process.env.JWT_REFRESH_EXPIRES as string,
+    EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
     SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string
   };

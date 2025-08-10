@@ -12,7 +12,7 @@ export const handleZodError = (err: any): TErrorResponse => {
 
       return {
             statusCode: httpStatus.BAD_REQUEST,
-            message: "Zod Error",
+            message: "Invalid request data format.",
             errorSources
       };
 };

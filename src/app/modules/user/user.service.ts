@@ -12,7 +12,7 @@ const createUser = async (payload: Partial<IUser>) => {
       const isUserExist = await User.findOne({ email });
 
       if (isUserExist) {
-            throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist");
+            throw new AppError(httpStatus.CONFLICT, "User already exists.");
       }
       const hashPassword = await bcryptjs.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND));
 
@@ -43,22 +43,24 @@ const getAllUsers = async () => {
 
 const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
       const isUserExist = await User.findById(userId);
+      const restrictedRoles = [Role.USER, Role.RIDER, Role.DRIVER];
+
       if (!isUserExist) {
-            throw new AppError(httpStatus.NOT_FOUND, "User Not Found");
+            throw new AppError(httpStatus.NOT_FOUND, "User not found.");
       }
 
       if (payload.role) {
-            if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER || decodedToken.role === Role.DRIVER) {
-                  throw new AppError(httpStatus.UNAUTHORIZED, "Your are not authorized 1");
+            if (restrictedRoles.includes(decodedToken.role)) {
+                  throw new AppError(httpStatus.FORBIDDEN, "You do not have permission to change roles.");
             }
             if (decodedToken.role === Role.ADMIN && payload.role === Role.SUPER_ADMIN) {
-                  throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized 2");
+                  throw new AppError(httpStatus.FORBIDDEN, "Admins cannot assign SUPER_ADMIN role.");
             }
       };
 
       if (payload.isActive || payload.isDeleted || payload.isVerified) {
-            if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER || decodedToken.role === Role.DRIVER) {
-                  throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized");
+            if (restrictedRoles.includes(decodedToken.role)) {
+                  throw new AppError(httpStatus.FORBIDDEN, "You do not have permission to change user status flags.");
             }
       };
 

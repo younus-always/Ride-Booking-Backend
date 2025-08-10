@@ -15,21 +15,21 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
   try {
     const accessToken = req.headers.authorization;
     if (!accessToken) {
-      throw new AppError(httpStatus.FORBIDDEN, "No Token Received");
+      throw new AppError(httpStatus.UNAUTHORIZED, "No Token Received");
     }
 
     const verifiedToken = verifyToken(accessToken, envVars.JWT_SECRET_TOKEN) as JwtPayload;
     const isUserExist = await User.findOne({ email: verifiedToken.email });
 
     if (!isUserExist) {
-      throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist");
+      throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist.");
     };
 
     if (isUserExist.isActive === IsActive.INACTIVE || isUserExist.isActive === IsActive.BLOCKED) {
-      throw new AppError(httpStatus.FORBIDDEN, `User is ${isUserExist.isActive}`);
+      throw new AppError(httpStatus.FORBIDDEN, `User is account is currently ${isUserExist.isActive}.`);
     }
     if (isUserExist.isDeleted) {
-      throw new AppError(httpStatus.FORBIDDEN, "User is Deleted");
+      throw new AppError(httpStatus.NOT_FOUND, "User account has been deleted and cannot access this resoures.");
     }
     if (!authRoles.includes(verifiedToken.role)) {
       throw new AppError(httpStatus.FORBIDDEN, "You are not permitted to view this route!");

@@ -28,11 +28,13 @@ export const createNewAccessTokenWithRefreshToken = async (refreshToken: string)
   const isUserExist = await User.findOne({ email: verifiedRefreshToken.email });
 
   if (!isUserExist) {
-    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist");
-  } else if (isUserExist.isActive === IsActive.INACTIVE || isUserExist.isActive === IsActive.BLOCKED) {
-    throw new AppError(httpStatus.FORBIDDEN, `User is ${isUserExist.isActive}`);
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exists.");
+  } else if (isUserExist.isActive === IsActive.INACTIVE) {
+    throw new AppError(httpStatus.FORBIDDEN, "User account is inactive.");
+  } else if (isUserExist.isActive === IsActive.BLOCKED) {
+    throw new AppError(httpStatus.FORBIDDEN, "User account is blocked.");
   } else if (isUserExist.isDeleted) {
-    throw new AppError(httpStatus.FORBIDDEN, "User is Deleted");
+    throw new AppError(httpStatus.FORBIDDEN, "User account has been deleted.");
   };
 
   const jwtPayload = {
