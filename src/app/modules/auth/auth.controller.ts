@@ -10,21 +10,10 @@ import { JwtPayload } from "jsonwebtoken";
 import passport from "passport";
 import { createUserTokens } from "../../utils/userTokens";
 import AppError from "../../errorHelper/AppError";
-import { verifyToken } from "../../utils/jwt";
 import { envVars } from "../../config/env";
 
 
 const creadentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-      // const loginInfo = await AuthService.creadentialsLogin(req.body);
-
-      // setAuthCookie(res, loginInfo);
-      // sendResponse(res, {
-      //       statusCode: httpStatus.OK,
-      //       success: true,
-      //       message: "User logged in successfully.",
-      //       data: loginInfo
-      // });
-
       passport.authenticate("local", async (err: any, user: any, info: any) => {
             if (err) {
                   return next(err);
@@ -91,10 +80,29 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
       });
 });
 
+const googleCallbackController = catchAsync(async (req: Request, res: Response) => {
+      const user = req.user;
+      let redirectTo = req.query.state ? req.query.state as string : "";
+
+      if (redirectTo.startsWith("/")) {
+            redirectTo = redirectTo.slice(1);
+      }
+      if (!user) {
+            throw new AppError(httpStatus.NOT_FOUND, "User not found.");
+      };
+
+      const tokenInfo = createUserTokens(user);
+      setAuthCookie(res, tokenInfo);
+
+      // Send user to frontend app after login
+      res.redirect(`${envVars.FRONTEND_REDIRECT_URL}/${redirectTo}`);
+});
+
 
 export const AuthController = {
       creadentialsLogin,
       logOut,
       getNewAccessToken,
-      resetPassword
+      resetPassword,
+      googleCallbackController
 };

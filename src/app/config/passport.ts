@@ -1,8 +1,10 @@
-import passport from "passport";
+import passport, { Profile } from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy, VerifyCallback } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
 import bcryptjs from "bcryptjs";
+import { Role } from "../modules/user/user.interface";
 
 
 passport.use(
@@ -32,7 +34,43 @@ passport.use(
                   if (envVars.NODE_ENV === "development") {
                         console.log("Passport Local Strategy Error:", error);
                   };
-                  done(error);
+                  return done(error);
+            }
+      })
+);
+
+passport.use(
+      new GoogleStrategy({
+            clientID: envVars.GOOGLE_CLIENT_ID,
+            clientSecret: envVars.GOOGLE_CLIENT_SECRET,
+            callbackURL: envVars.GOOGLE_OAUTH_CALLBACK
+      }, async (accessToken: string, refreshToken: string, profile: Profile, done: VerifyCallback) => {
+            try {
+                  const email = profile.emails?.[0].value;
+                  if (!email) {
+                        return done(null, false, { message: "No email found." })
+                  };
+
+                  let user = await User.findOne({ email });
+                  if (!user) {
+                        user = await User.create({
+                              name: profile.displayName,
+                              email,
+                              picture: profile.photos?.[0].value,
+                              role: Role.ADMIN,
+                              isVerified: true,
+                              auths: [{
+                                    provider: profile.provider,
+                                    providerId: profile.id
+                              }]
+                        });
+                  };
+                  return done(null, user);
+            } catch (error) {
+                  if (envVars.NODE_ENV === "development") {
+                        console.log("Passport Google Strategy Error:", error);
+                  }
+                  return done(error);
             }
       })
 );
@@ -41,7 +79,6 @@ passport.use(
 passport.serializeUser((user: any, done) => {
       done(null, user._id);
 });
-
 passport.deserializeUser(async (id: string, done) => {
       try {
             const user = await User.findById(id);

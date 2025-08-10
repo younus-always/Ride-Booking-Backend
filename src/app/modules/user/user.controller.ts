@@ -32,11 +32,8 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 const updateUser = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body;
-  // const token = req.headers.authorization;
-  // const verifiedToken = jwt.verify(token as string, envVars.JWT_SECRET_TOKEN) as JwtPayload;
-  const verifiedToken = req.user as JwtPayload;
-  console.log(verifiedToken);
-  const user = await UserService.updateUser(id, payload, verifiedToken);
+  const decodedToken = req.user as JwtPayload;
+  const user = await UserService.updateUser(id, payload, decodedToken);
 
   sendResponse(res, {
     success: true,
@@ -45,6 +42,7 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
     data: user
   });
 });
+
 
 export const UserController = {
   createUser,

@@ -30,4 +30,4 @@ export interface IUser {
       isVerified?: boolean;
       isDeleted?: boolean;
       isActive?: IsActive
-}
+};
