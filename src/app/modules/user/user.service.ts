@@ -58,7 +58,7 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
 
       if (payload.isActive || payload.isDeleted || payload.isVerified) {
             if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER || decodedToken.role === Role.DRIVER) {
-                  throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized")
+                  throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized");
             }
       };
 

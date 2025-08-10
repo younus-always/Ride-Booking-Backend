@@ -36,7 +36,6 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
   const verifiedToken = req.user;
   const user = await UserService.updateUser(id, payload, verifiedToken);
 
-  console.log(verifiedToken);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

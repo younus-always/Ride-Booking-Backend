@@ -1,7 +1,7 @@
 // @ts-check
 
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import eslint from "@eslint/js";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
       eslint.configs.recommended,
@@ -11,7 +11,6 @@ export default tseslint.config(
             rules: {
                   // --- TypeScript-Aware ---
                   "no-unused-vars": "off",
-                  "@typescript-eslint/explicit-function-return-type": "off",
                   "@typescript-eslint/no-explicit-any": "warn",
                   "@typescript-eslint/no-empty-function": "warn",
                   "@typescript-eslint/no-non-null-assertion": "warn",

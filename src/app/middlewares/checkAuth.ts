@@ -1,4 +1,4 @@
-import  { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import AppError from "../errorHelper/AppError";
 import httpStatus from "http-status-codes";
 import { envVars } from "../config/env";
@@ -9,6 +9,9 @@ import { JwtPayload } from "jsonwebtoken";
 
 
 export const checkAuth = (...authRoles: string[]) => async (req: Request, res: Response, next: NextFunction) => {
+  console.log("checkAuth running...");
+  console.log("authRoles:", authRoles);
+  console.log("Authorization header:", req.headers.authorization);
   try {
     const accessToken = req.headers.authorization;
     if (!accessToken) {
