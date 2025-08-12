@@ -19,8 +19,9 @@ passport.use(
                         return done(null, false, { message: "User doesn't exists." });
                   };
 
-                  if (!isUserExist.password) {
-                        return done("You are google login");
+                  const isGoogleAuthenticate = isUserExist.auths.some(providerObj => providerObj.provider === "google");
+                  if (isGoogleAuthenticate && !isUserExist.password) {
+                        return done(null, false, { message: "You have authenticated through Google. So if you want to login with credentials, then at first login with google and set a password for your Gmail and then you can login with email and password." });
                   };
 
                   const isPasswordMatch = await bcryptjs.compare(password, isUserExist?.password as string);
@@ -48,7 +49,7 @@ passport.use(
             try {
                   const email = profile.emails?.[0].value;
                   if (!email) {
-                        return done(null, false, { message: "No email found." })
+                        return done(null, false, { message: "No email found." });
                   };
 
                   let user = await User.findOne({ email });

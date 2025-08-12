@@ -19,7 +19,7 @@ const creadentialsLogin = catchAsync(async (req: Request, res: Response, next: N
                   return next(err);
             };
             if (!user) {
-                  return next(new AppError(400, info.message));
+                  return next(new AppError(httpStatus.NOT_FOUND, info.message));
             };
 
             const userTokens = createUserTokens(user);

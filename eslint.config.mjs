@@ -23,7 +23,7 @@ export default tseslint.config(
                   "eqeqeq": ["error", "always"],
                   "no-console": "warn",
                   "curly": ["error", "all"],
-                  "quotes": ["error", "double"],
+                  "quotes": ["warn", "double"],
                   "comma-dangle": ["error", "never"],
                   "object-curly-spacing": ["error", "always"],
                   "array-bracket-spacing": ["error", "never"],
