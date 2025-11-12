@@ -1,4 +1,4 @@
-export interface TErrrorSources {
+export interface TErrorSources {
       path: string;
       message: string;
 };
@@ -6,5 +6,5 @@ export interface TErrrorSources {
 export interface TErrorResponse {
       statusCode: number;
       message: string;
-      errorSources?: TErrrorSources[];
+      errorSources?: TErrorSources[];
 };

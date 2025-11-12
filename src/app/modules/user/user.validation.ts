@@ -8,15 +8,28 @@ export const createUserZodSchema = z.object({
   email: z.string({ error: "Email is required" }),
   password: z.string({ error: "Password is required" })
     .min(8, { error: "Password must be at least 8 characters long." })
+    .max(14, { error: "Password cannot exceed 14 characters." })
     .regex(/^(?=.*[A-Z])/, {
       error: "Password must contain at least 1 uppercase letter."
     })
+    .regex(/^(?=.*[a-z])/, {
+      error: "Password must contain at least 1 lowercase letter."
+    })
     .regex(/^(?=.*[!@#$%^&*])/, {
-      error: "Password must contain at least 1 special character."
+      error: "Password must contain at least 1 special character (!@#$%^&*)."
     })
     .regex(/^(?=.*\d)/, {
       error: "Password must contain at least 1 number."
-    })
+    }),
+  phone: z
+    .string({ error: "Phone number must be string." })
+    .regex(/^(?:\+8801\d{9}|01\d{9})$/,
+      { error: "Phone number must be valid for Bangladesh. Format: +8801XXXXXXXXX or 01XXXXXXXXX" })
+    .optional(),
+  address: z
+    .string({ error: "Address must be string." })
+    .max(200, { error: "Address cannot exceed 200 characters." })
+    .optional()
 });
 
 export const updateUserZodSchema = z.object({
@@ -24,20 +37,25 @@ export const updateUserZodSchema = z.object({
     .min(3, { error: "Name must be 3 characters" })
     .max(50, { error: "Name must shorter than 50 characters" })
     .optional(),
-  password: z.string({ error: "Password is required" })
-    .min(8, { error: "Password must be at least 8 characters long." })
-    .regex(/^(?=.*[A-Z])/, {
-      error: "Password must contain at least 1 uppercase letter."
-    })
-    .regex(/^(?=.*[!@#$%^&*])/, {
-      error: "Password must contain at least 1 special character."
-    })
-    .regex(/^(?=.*\d)/, {
-      error: "Password must contain at least 1 number."
-    })
+  phone: z.
+    string({ error: "Phone number must be string." })
+    .regex(/^(?:\+8801\d{9}|01\d{9})$/,
+      { error: "Phone number must be valid for Bangladesh. Format: +8801XXXXXXXXX or 01XXXXXXXXX" })
     .optional(),
-  role: z.enum(Object.values(Role)).optional(),
-  isActive: z.enum(Object.values(IsActive)).optional(),
-  isVerified: z.boolean({ error: "isVerified must be true of false" }).optional(),
-  isDeleted: z.boolean({ error: "isDeleted must be true of false" }).optional()
+  address: z
+    .string({ error: "Address must be string." })
+    .max(200, { error: "Address cannot exceed 200 characters." })
+    .optional(),
+  role: z
+    .enum(Object.values(Role) as [string])
+    .optional(),
+  isActive: z
+    .enum(Object.values(IsActive) as [string])
+    .optional(),
+  isVerified: z
+    .boolean({ error: "isVerified must be true of false" })
+    .optional(),
+  isDeleted: z
+    .boolean({ error: "isDeleted must be true of false" })
+    .optional()
 });

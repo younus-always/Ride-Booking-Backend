@@ -12,8 +12,9 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
   console.log("checkAuth running...");
   console.log("authRoles:", authRoles);
   console.log("Authorization header:", req.headers.authorization);
+  console.log("Cookies:", req.cookies.accessToken);
   try {
-    const accessToken = req.headers.authorization;
+    const accessToken = req.headers.authorization || req.cookies.accessToken;
     if (!accessToken) {
       throw new AppError(httpStatus.UNAUTHORIZED, "No Token Received");
     }
@@ -22,17 +23,23 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
     const isUserExist = await User.findOne({ email: verifiedToken.email });
 
     if (!isUserExist) {
-      throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist.");
+      throw new AppError(httpStatus.NOT_FOUND, "User Not Found.");
     };
+
+    if (isUserExist.isDeleted) {
+      throw new AppError(httpStatus.FORBIDDEN, "User account has been deleted and cannot access this resources.");
+    }
 
     if (isUserExist.isActive === IsActive.INACTIVE || isUserExist.isActive === IsActive.BLOCKED) {
       throw new AppError(httpStatus.FORBIDDEN, `User is account is currently ${isUserExist.isActive}.`);
     }
-    if (isUserExist.isDeleted) {
-      throw new AppError(httpStatus.NOT_FOUND, "User account has been deleted and cannot access this resoures.");
-    }
+
+    // if (!isUserExist.isVerified) {
+    //   throw new AppError(httpStatus.FORBIDDEN, "User account is not verified");
+    // };
+
     if (!authRoles.includes(verifiedToken.role)) {
-      throw new AppError(httpStatus.FORBIDDEN, "You are not permitted to view this route!");
+      throw new AppError(httpStatus.FORBIDDEN, "Insufficient Access. You are not permitted to view this route!");
     }
 
     req.user = verifiedToken;

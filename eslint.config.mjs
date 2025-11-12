@@ -27,9 +27,7 @@ export default tseslint.config(
                   "comma-dangle": ["error", "never"],
                   "object-curly-spacing": ["error", "always"],
                   "array-bracket-spacing": ["error", "never"],
-                  "no-trailing-spaces": "error",
-                  "keyword-spacing": ["error", { "before": true, "after": true }],
-                  "brace-style": ["error", "1tbs"]
+                  "no-trailing-spaces": "error"
             }
       }
 );

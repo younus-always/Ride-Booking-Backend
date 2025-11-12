@@ -11,18 +11,19 @@ export const seedSuperAdmin = async () => {
     if (isSuperAdminExist) {
       throw new AppError(httpStatus.CONFLICT, "Super admin already exists.");
     };
-    console.log("Trying to create Super Admin.");
+    console.log("Try to create Super Admin.");
 
     const hashPassword = await bcryptjs.hash(envVars.SUPER_ADMIN_PASSWORD, Number(envVars.BCRYPT_SALT_ROUND));
 
     const authProvider: IAuthProvider = {
-      provider: "creadentials",
+      provider: "credential",
       providerId: envVars.SUPER_ADMIN_EMAIL
     };
     const payload: IUser = {
       name: "Super Admin",
       email: envVars.SUPER_ADMIN_EMAIL,
       password: hashPassword,
+      address: "Dhaka, Bangladesh",
       role: Role.SUPER_ADMIN,
       isVerified: true,
       auths: [authProvider]

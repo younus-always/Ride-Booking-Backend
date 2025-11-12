@@ -1,8 +1,8 @@
 import httpStatus from "http-status-codes";
-import { TErrorResponse, TErrrorSources } from "../interfaces/error.type";
+import { TErrorResponse, TErrorSources } from "../interfaces/error.type";
 
 export const handleZodError = (err: any): TErrorResponse => {
-      const errorSources: TErrrorSources[] = [];
+      const errorSources: TErrorSources[] = [];
       err.issues.forEach((issue: any) => {
             errorSources.push({
                   path: issue.path[issue.path.length - 1],
@@ -12,7 +12,7 @@ export const handleZodError = (err: any): TErrorResponse => {
 
       return {
             statusCode: httpStatus.BAD_REQUEST,
-            message: "Invalid request data format.",
+            message: "Zod Error. Invalid request data format.",
             errorSources
       };
 };

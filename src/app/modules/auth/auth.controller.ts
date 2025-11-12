@@ -13,7 +13,7 @@ import AppError from "../../errorHelper/AppError";
 import { envVars } from "../../config/env";
 
 
-const creadentialsLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+const credentialLogin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
       passport.authenticate("local", async (err: any, user: any, info: any) => {
             if (err) {
                   return next(err);
@@ -38,6 +38,22 @@ const creadentialsLogin = catchAsync(async (req: Request, res: Response, next: N
                   }
             });
       })(req, res, next);
+});
+
+const googleCallbackController = catchAsync(async (req: Request, res: Response) => {
+      const user = req.user;
+      let redirectTo = req.query.state ? req.query.state as string : "";
+
+      if (redirectTo.startsWith("/")) {
+            redirectTo = redirectTo.slice(1);
+      };
+      if (!user) {
+            throw new AppError(httpStatus.NOT_FOUND, "User not found.");
+      };
+      const tokenInfo = createUserTokens(user);
+      setAuthCookie(res, tokenInfo);
+
+      res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
 });
 
 const logOut = catchAsync(async (req: Request, res: Response) => {
@@ -66,43 +82,64 @@ const getNewAccessToken = catchAsync(async (req: Request, res: Response) => {
       });
 });
 
-const resetPassword = catchAsync(async (req: Request, res: Response) => {
+const changePassword = catchAsync(async (req: Request, res: Response) => {
       const { oldPassword, newPassword } = req.body;
       const decodedToken = req.user as JwtPayload;
-
-      const updatedPassword = await AuthService.resetPassword(oldPassword, newPassword, decodedToken);
+      await AuthService.changePassword(oldPassword, newPassword, decodedToken);
 
       sendResponse(res, {
             statusCode: httpStatus.OK,
             success: true,
             message: "Password changed successfully.",
-            data: updatedPassword
+            data: null
       });
 });
 
-const googleCallbackController = catchAsync(async (req: Request, res: Response) => {
-      const user = req.user;
-      let redirectTo = req.query.state ? req.query.state as string : "";
+const forgetPassword = catchAsync(async (req: Request, res: Response) => {
+      const { email } = req.body;
+      await AuthService.forgetPassword(email);
 
-      if (redirectTo.startsWith("/")) {
-            redirectTo = redirectTo.slice(1);
-      }
-      if (!user) {
-            throw new AppError(httpStatus.NOT_FOUND, "User not found.");
-      };
+      sendResponse(res, {
+            statusCode: httpStatus.OK,
+            success: true,
+            message: "Email sent successfully.",
+            data: null
+      });
+});
 
-      const tokenInfo = createUserTokens(user);
-      setAuthCookie(res, tokenInfo);
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+      const decodedToken = req.user as JwtPayload;
+      await AuthService.resetPassword(req.body, decodedToken);
 
-      // Send user to frontend app after login
-      res.redirect(`${envVars.FRONTEND_REDIRECT_URL}/${redirectTo}`);
+      sendResponse(res, {
+            statusCode: httpStatus.OK,
+            success: true,
+            message: "Password reset successfully.",
+            data: null
+      });
+});
+
+const setPassword = catchAsync(async (req: Request, res: Response) => {
+      const { password } = req.body;
+      const decodedToken = req.user as JwtPayload;
+      await AuthService.setPassword(decodedToken.userId, password);
+
+      sendResponse(res, {
+            statusCode: httpStatus.OK,
+            success: true,
+            message: "Password set successfully.",
+            data: null
+      });
 });
 
 
 export const AuthController = {
-      creadentialsLogin,
+      credentialLogin,
+      googleCallbackController,
       logOut,
       getNewAccessToken,
+      changePassword,
+      forgetPassword,
       resetPassword,
-      googleCallbackController
+      setPassword
 };

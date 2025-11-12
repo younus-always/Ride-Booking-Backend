@@ -9,15 +9,15 @@ import httpStatus from "http-status-codes";
 
 const createUser = async (payload: Partial<IUser>) => {
       const { email, password, ...rest } = payload;
-      const isUserExist = await User.findOne({ email });
+      // const isUserExist = await User.findOne({ email });
 
-      if (isUserExist) {
-            throw new AppError(httpStatus.CONFLICT, "User already exists.");
-      }
+      // if (isUserExist) {
+      //       throw new AppError(httpStatus.CONFLICT, "User already exists.");
+      // }
       const hashPassword = await bcryptjs.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND));
 
       const authProvider: IAuthProvider = {
-            provider: "creadentials",
+            provider: "credential",
             providerId: email as string
       };
 
@@ -43,7 +43,7 @@ const getAllUsers = async () => {
 
 const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
       const isUserExist = await User.findById(userId);
-      const restrictedRoles = [Role.USER, Role.RIDER, Role.DRIVER];
+      const restrictedRoles = [Role.RIDER, Role.DRIVER];
 
       if (!isUserExist) {
             throw new AppError(httpStatus.NOT_FOUND, "User not found.");
@@ -75,10 +75,21 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
       return updatedUser;
 };
 
+const getSingleUser = async (id: string) => {
+      const user = await User.findById(id).select("-password");
+      return user;
+};
+
+const getMe = async (decodedToken: JwtPayload) => {
+      const user = await User.findById(decodedToken.userId).select("-password");
+      return user;
+};
 
 
 export const UserService = {
       createUser,
       getAllUsers,
-      updateUser
+      updateUser,
+      getSingleUser,
+      getMe
 };

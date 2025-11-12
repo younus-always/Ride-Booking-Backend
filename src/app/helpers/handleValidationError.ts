@@ -1,9 +1,9 @@
 import httpStatus from "http-status-codes";
-import { TErrorResponse, TErrrorSources } from "../interfaces/error.type";
+import { TErrorResponse, TErrorSources } from "../interfaces/error.type";
 import mongoose from "mongoose";
 
 export const handleValidationError = (err: mongoose.Error.ValidationError): TErrorResponse => {
-      const errorSources: TErrrorSources[] = [];
+      const errorSources: TErrorSources[] = [];
       const errors = Object.values(err.errors);
 
       errors.forEach((errObj: any) => {
@@ -15,7 +15,7 @@ export const handleValidationError = (err: mongoose.Error.ValidationError): TErr
 
       return {
             statusCode: httpStatus.BAD_REQUEST,
-            message: "Request validation failded. Please check the submitted data.",
+            message: "Request validation failed. Please check the submitted data.",
             errorSources
       };
 };

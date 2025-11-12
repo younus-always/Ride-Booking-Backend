@@ -4,7 +4,7 @@ import { Strategy as GoogleStrategy, VerifyCallback } from "passport-google-oaut
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
 import bcryptjs from "bcryptjs";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 
 
 passport.use(
@@ -13,23 +13,31 @@ passport.use(
             passwordField: "password"
       }, async (email: string, password: string, done) => {
             try {
-                  const isUserExist = await User.findOne({ email });
+                  const user = await User.findOne({ email });
 
-                  if (!isUserExist) {
+                  if (!user) {
                         return done(null, false, { message: "User doesn't exists." });
                   };
 
-                  const isGoogleAuthenticate = isUserExist.auths.some(providerObj => providerObj.provider === "google");
-                  if (isGoogleAuthenticate && !isUserExist.password) {
+                  if (user.isActive === IsActive.INACTIVE || user.isActive === IsActive.BLOCKED) {
+                        return done(null, false, { message: `User account is ${user.isActive}` });
+                  }
+
+                  if (user.isDeleted) {
+                        return done(null, false, { message: "User account is deleted" });
+                  }
+
+                  const isGoogleAuthenticate = user.auths.some(providerObj => providerObj.provider === "google");
+                  if (isGoogleAuthenticate && !user.password) {
                         return done(null, false, { message: "You have authenticated through Google. So if you want to login with credentials, then at first login with google and set a password for your Gmail and then you can login with email and password." });
                   };
 
-                  const isPasswordMatch = await bcryptjs.compare(password, isUserExist?.password as string);
+                  const isPasswordMatch = await bcryptjs.compare(password, user.password as string);
 
                   if (!isPasswordMatch) {
                         return done(null, false, { message: "Password does not match." });
                   };
-                  return done(null, isUserExist);
+                  return done(null, user);
 
             } catch (error) {
                   if (envVars.NODE_ENV === "development") {
@@ -44,7 +52,7 @@ passport.use(
       new GoogleStrategy({
             clientID: envVars.GOOGLE_CLIENT_ID,
             clientSecret: envVars.GOOGLE_CLIENT_SECRET,
-            callbackURL: envVars.GOOGLE_OAUTH_CALLBACK
+            callbackURL: envVars.GOOGLE_CALLBACK_URL
       }, async (accessToken: string, refreshToken: string, profile: Profile, done: VerifyCallback) => {
             try {
                   const email = profile.emails?.[0].value;
@@ -53,12 +61,20 @@ passport.use(
                   };
 
                   let user = await User.findOne({ email });
+
+                  if (user && (user.isActive === IsActive.INACTIVE || user.isActive === IsActive.BLOCKED)) {
+                        return done(null, false, { message: `User account is ${user.isActive}` });
+                  }
+                  if (user && user.isDeleted) {
+                        return done(null, false, { message: "User account is deleted" });
+                  }
+
                   if (!user) {
                         user = await User.create({
-                              name: profile.displayName,
                               email,
+                              name: profile.displayName,
                               picture: profile.photos?.[0].value,
-                              role: Role.ADMIN,
+                              role: Role.USER,
                               isVerified: true,
                               auths: [{
                                     provider: profile.provider,

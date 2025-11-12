@@ -13,6 +13,6 @@ export const createRideZodSchema = z.object({
             lng: z.number().min(-180).max(180),
             address: z.string().optional()
       }),
-      fare: z.number().min(50, { error: "Minimum fare amount 50 BDT." }),
+      fare: z.number().min(150, { error: "Minimum fare amount 150 BDT." }),
       status: z.enum(Object.values(RideStatus)).default(RideStatus.Requested)
 });

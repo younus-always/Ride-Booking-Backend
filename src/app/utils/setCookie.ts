@@ -1,4 +1,4 @@
-import  { Response } from "express";
+import { Response } from "express";
 
 export interface IAuthTokens {
   accessToken?: string;
@@ -9,13 +9,15 @@ export const setAuthCookie = (res: Response, tokenInfo: IAuthTokens) => {
   if (tokenInfo.accessToken) {
     res.cookie("accessToken", tokenInfo.accessToken, {
       httpOnly: true,
-      secure: false
+      secure: false,
+      sameSite: "lax"
     });
   }
   if (tokenInfo.refreshToken) {
     res.cookie("refreshToken", tokenInfo.refreshToken, {
       httpOnly: true,
-      secure: false
+      secure: false,
+      sameSite: "lax"
     });
   }
 };
