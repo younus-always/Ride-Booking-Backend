@@ -20,5 +20,6 @@ export const createRideZodSchema = z.object({
 });
 
 export const updateRideStatusZodSchema = z.object({
-      status: z.enum(Object.values(RideStatus))
+      status: z.enum(Object.values(RideStatus)),
+      cancelReason: z.string().optional()
 });

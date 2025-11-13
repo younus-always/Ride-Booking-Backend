@@ -1,6 +1,5 @@
 import { model, Schema } from "mongoose";
-import { ChangedBy, IRide, RideStatus, IStatusHistory, ILocation } from "./ride.interface";
-
+import { ChangedBy, IRide, RideStatus, IRideStatusHistory, ILocation } from "./ride.interface";
 
 const locationSchema = new Schema<ILocation>({
       lat: { type: Number, required: true },
@@ -9,7 +8,7 @@ const locationSchema = new Schema<ILocation>({
 
 }, { _id: false });
 
-const statusHistorySchema = new Schema<IStatusHistory>({
+const statusHistorySchema = new Schema<IRideStatusHistory>({
       status: {
             type: String,
             enum: Object.values(RideStatus),
@@ -70,33 +69,6 @@ rideSchema.pre("save", async function (next) {
       }
       next();
 });
-
-const cancelRide = async (rideId: string) => {
-      const ride = await Ride.findById(rideId);
-      if (!ride) {
-            throw new AppError(httpStatus.NOT_FOUND, "Ride not found");
-      }
-
-      // cancellation after certain statuses
-      const nonCancellableStatuses = ["accepted", "picked_up", "in_transit", "completed"];
-      if (nonCancellableStatuses.includes(ride.status)) {
-            throw new AppError(httpStatus.FORBIDDEN, "You cannot cancel this ride.");
-      }
-
-      // update ride status payload
-      const payload = {
-            status: RideStatus.Cancelled,
-            statusHistory: [...ride.statusHistory, {
-                  status: RideStatus.Cancelled,
-                  changedBy: ChangedBy.Rider,
-                  changedById: ride.riderId,
-                  note: "I changed my mind to going."
-            }]
-      };
-
-      const cancelledRide = await Ride.findByIdAndUpdate(rideId, payload, { new: true });
-      return cancelledRide;
-};
 
 
 export const Ride = model<IRide>("Ride", rideSchema);

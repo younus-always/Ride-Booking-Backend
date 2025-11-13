@@ -23,7 +23,7 @@ export enum ChangedBy {
       System = "System",
 };
 
-export interface IStatusHistory {
+export interface IRideStatusHistory {
       status: RideStatus;
       changedBy: ChangedBy;
       changedById?: Types.ObjectId;      // riderId/driverId/adminId
@@ -40,7 +40,7 @@ export interface IRide {
       destination: ILocation;
       fare: number;
       status: RideStatus;
-      statusHistory: IStatusHistory[]; // every change logged
+      statusHistory: IRideStatusHistory[]; // every change logged
       requestedAt?: Date;
       acceptedAt?: Date;
       pickedUpAt?: Date;

@@ -10,9 +10,9 @@ import { handleValidationError } from "../helpers/handleValidationError";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const globalErrorHandler = async (err: any, req: Request, res: Response, next: NextFunction) => {
-  if (envVars.NODE_ENV === "development") {
-    console.log("Global Error Handler:", err);
-  }
+  // if (envVars.NODE_ENV === "development") {
+  //   console.log("Global Error Handler:", err);
+  // }
 
   let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
   let message = "Something went wrong!";
