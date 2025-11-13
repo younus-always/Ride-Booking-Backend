@@ -1,8 +1,15 @@
 import { model, Schema } from "mongoose";
-import { ChangedBy, IRide, RideStatus, StatusHistoryItem } from "./ride.interface";
+import { ChangedBy, IRide, RideStatus, IStatusHistory, ILocation } from "./ride.interface";
 
 
-const statusHistorySchema = new Schema<StatusHistoryItem>({
+const locationSchema = new Schema<ILocation>({
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true },
+      address: { type: String }
+
+}, { _id: false });
+
+const statusHistorySchema = new Schema<IStatusHistory>({
       status: {
             type: String,
             enum: Object.values(RideStatus),
@@ -13,14 +20,11 @@ const statusHistorySchema = new Schema<StatusHistoryItem>({
             enum: Object.values(ChangedBy),
             required: true
       },
-      changedById: {
-            type: Schema.Types.ObjectId,
-            ref: "User"
-      },
-      note: { type: String }
+      changedById: { type: String },
+      note: { type: String },
+      changedAt: { type: Date, default: Date.now }
 }, {
-      _id: false,
-      timestamps: true
+      _id: false
 });
 
 const rideSchema = new Schema<IRide>({
@@ -33,29 +37,66 @@ const rideSchema = new Schema<IRide>({
             type: Schema.Types.ObjectId,
             ref: "User"
       },
-      pickup: {
-            lat: { type: Number },
-            lng: { type: Number },
-            address: { type: String }
-      },
-      destination: {
-            lat: { type: Number },
-            lng: { type: Number },
-            address: { type: String }
-      },
+      pickup: locationSchema,
+      destination: locationSchema,
       fare: { type: Number, required: true },
       status: {
             type: String,
             enum: Object.values(RideStatus),
             default: RideStatus.Requested
       },
-      statusHistory: {
-            type: [statusHistorySchema],
-            default: []
-      },
-      requestedAt: { type: Date, default: Date.now }
+      statusHistory: [statusHistorySchema],
+      requestedAt: { type: Date, default: Date.now },
+      acceptedAt: { type: Date },
+      pickedUpAt: { type: Date },
+      completedAt: { type: Date },
+      cancelledAt: { type: Date },
+      cancelReason: { type: String }
 }, {
       versionKey: false,
       timestamps: true
 });
+
+
+rideSchema.pre("save", async function (next) {
+      if (this.isModified("riderId")) {
+            const history = {
+                  status: this.status,
+                  changedBy: ChangedBy.Rider,
+                  changedById: this.riderId
+            };
+
+            this.statusHistory = [history];
+      }
+      next();
+});
+
+const cancelRide = async (rideId: string) => {
+      const ride = await Ride.findById(rideId);
+      if (!ride) {
+            throw new AppError(httpStatus.NOT_FOUND, "Ride not found");
+      }
+
+      // cancellation after certain statuses
+      const nonCancellableStatuses = ["accepted", "picked_up", "in_transit", "completed"];
+      if (nonCancellableStatuses.includes(ride.status)) {
+            throw new AppError(httpStatus.FORBIDDEN, "You cannot cancel this ride.");
+      }
+
+      // update ride status payload
+      const payload = {
+            status: RideStatus.Cancelled,
+            statusHistory: [...ride.statusHistory, {
+                  status: RideStatus.Cancelled,
+                  changedBy: ChangedBy.Rider,
+                  changedById: ride.riderId,
+                  note: "I changed my mind to going."
+            }]
+      };
+
+      const cancelledRide = await Ride.findByIdAndUpdate(rideId, payload, { new: true });
+      return cancelledRide;
+};
+
+
 export const Ride = model<IRide>("Ride", rideSchema);
